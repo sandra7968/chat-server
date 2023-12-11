@@ -1,22 +1,23 @@
-const express = require('express')
-const cors = require('cors')
-const mongoose = require('mongoose')
-
-const chatServer = express();
 require('dotenv').config();
+const express = require('express')
+const cors = require('cors') 
+const chatServer = express();
+const userRoutes = require('./routes/userRoutes')
+require('./connection')
 
 chatServer.use(cors());
+chatServer.use(express.urlencoded({extended:true}))
 chatServer.use(express.json());
-mongoose.connect(process.env.MONGO_URL
-//     ,{
-//     useNewUrlParser: true,
-//     useUnifiedTopology:true,
-// }
-).then(()=>{
-    console.log("DB Connection Successful!");
-}).catch((err)=>{
-    console.log(err.message);
+chatServer.use('/users',userRoutes)
+const server = require('http').createServer(chatServer)
+const PORT = 5000
+const io = require('socket.io')(server,{
+    cors:{
+        origin: 'http://localhost:3000',
+        methods: ['GET','POST']
+    }
 })
-const server = chatServer.listen(process.env.PORT,()=>{
-    console.log(`Server started on Port ${process.env.PORT}`);
+
+server.listen(PORT, ()=>{
+    console.log('listening to port', PORT);
 })
